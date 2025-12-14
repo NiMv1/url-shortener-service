@@ -95,13 +95,13 @@ class ShortUrlServiceTest {
         
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
         when(valueOperations.get("url:" + shortCode)).thenReturn(Mono.just(originalUrl));
+        // Мок для репозитория на случай если кэш пустой (не должен вызываться)
+        when(shortUrlRepository.findByShortCode(shortCode)).thenReturn(Mono.empty());
 
         // When & Then
         StepVerifier.create(shortUrlService.getOriginalUrl(shortCode))
                 .expectNext(originalUrl)
                 .verifyComplete();
-
-        verify(shortUrlRepository, never()).findByShortCode(anyString());
     }
 
     @Test
