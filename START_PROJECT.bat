@@ -43,54 +43,71 @@ if errorlevel 1 (
 echo [OK] Docker запущен
 echo.
 
-:: Запуск инфраструктуры
-echo [3/5] Запуск MongoDB, Redis, RabbitMQ...
-docker-compose up -d mongodb redis rabbitmq
+:: Запуск ВСЕЙ инфраструктуры (включая Prometheus, Grafana)
+echo [3/5] Запуск всей инфраструктуры Docker...
+docker-compose up -d
 if errorlevel 1 (
     echo [ОШИБКА] Не удалось запустить контейнеры!
     pause
     exit /b 1
 )
-echo [OK] Контейнеры запущены
+echo [OK] Все контейнеры запущены
 echo.
 
 :: Ожидание готовности контейнеров
-echo [4/5] Ожидание готовности сервисов (15 сек)...
-timeout /t 15 /nobreak >nul
+echo [4/5] Ожидание готовности сервисов (20 сек)...
+timeout /t 20 /nobreak >nul
 echo [OK] Сервисы готовы
 echo.
 
+:: Установка переменных окружения
+set SPRING_DATA_REDIS_PORT=6380
+
+echo [5/5] Запуск приложения...
+start "URL Shortener (8090)" cmd /c "cd /d "%~dp0" && set JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-21.0.9.10-hotspot && set SPRING_DATA_REDIS_PORT=6380 && mvn spring-boot:run -DskipTests"
+
+:: Ожидание запуска приложения
+timeout /t 25 /nobreak >nul
+
 :: Открытие браузера с вкладками
-echo [5/5] Открытие браузера...
-timeout /t 3 /nobreak >nul
-start "" "http://localhost:8090/actuator/health"
-timeout /t 1 /nobreak >nul
+echo Открытие браузера...
 start "" "http://localhost:8090/swagger-ui.html"
 timeout /t 1 /nobreak >nul
 start "" "http://localhost:15672"
+timeout /t 1 /nobreak >nul
+start "" "http://localhost:9091"
+timeout /t 1 /nobreak >nul
+start "" "http://localhost:3001"
 echo [OK] Вкладки браузера открыты
 echo.
 
 echo ╔══════════════════════════════════════════════════════════════╗
-echo ║                    ЗАПУСК ПРИЛОЖЕНИЯ                        ║
-echo ║                                                              ║
-echo ║  Ссылки для проверки:                                       ║
-echo ║  • Health:     http://localhost:8090/actuator/health        ║
-echo ║  • Swagger:    http://localhost:8090/swagger-ui.html        ║
-echo ║  • RabbitMQ:   http://localhost:15672 (guest/guest)         ║
-echo ║                                                              ║
-echo ║  Для остановки: закройте это окно или нажмите Ctrl+C        ║
+echo ║              URL SHORTENER SERVICE ЗАПУЩЕН!                 ║
+echo ╠══════════════════════════════════════════════════════════════╣
+echo ║  API:                                                        ║
+echo ║  • URL Shortener API:  http://localhost:8090                ║
+echo ║  • Swagger UI:         http://localhost:8090/swagger-ui.html║
+echo ║  • Health Check:       http://localhost:8090/actuator/health║
+echo ╠══════════════════════════════════════════════════════════════╣
+echo ║  Инфраструктура:                                             ║
+echo ║  • RabbitMQ:           http://localhost:15672 (guest/guest) ║
+echo ║  • MongoDB:            localhost:27017                      ║
+echo ║  • Redis:              localhost:6380                       ║
+echo ╠══════════════════════════════════════════════════════════════╣
+echo ║  Мониторинг:                                                 ║
+echo ║  • Prometheus:         http://localhost:9091                ║
+echo ║  • Grafana:            http://localhost:3001 (admin/admin)  ║
+echo ╠══════════════════════════════════════════════════════════════╣
+echo ║  Для остановки: нажмите любую клавишу в этом окне           ║
 echo ╚══════════════════════════════════════════════════════════════╝
 echo.
 
-:: Установка порта Redis (в docker-compose он на 6380)
-set REDIS_PORT=6380
+pause
 
-:: Запуск приложения (при закрытии окна - приложение остановится)
-call mvn spring-boot:run -q
-
-:: После остановки приложения - остановить контейнеры
+:: После остановки - остановить всё
 echo.
+echo Остановка сервисов...
+taskkill /FI "WINDOWTITLE eq URL Shortener*" /F 2>nul
 echo Остановка контейнеров...
 docker-compose down
 echo Готово!
