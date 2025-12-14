@@ -11,6 +11,12 @@ echo.
 :: Переход в директорию проекта
 cd /d "%~dp0"
 
+:: Остановка предыдущих Java процессов на порту 8090
+echo [0/5] Остановка предыдущих процессов...
+for /f "tokens=5" %%a in ('netstat -ano ^| findstr :8090 ^| findstr LISTENING 2^>nul') do taskkill /F /PID %%a 2>nul
+echo [OK] Порт 8090 освобождён
+echo.
+
 :: Настройка Java
 set JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-21.0.9.10-hotspot
 set PATH=%JAVA_HOME%\bin;%PATH%
