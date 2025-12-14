@@ -16,10 +16,10 @@ Write-Host ""
 Write-Host "[0/5] Остановка предыдущих процессов..." -ForegroundColor Yellow
 $connections = netstat -ano | Select-String ":8090.*LISTENING"
 foreach ($conn in $connections) {
-    $pid = ($conn -split '\s+')[-1]
-    if ($pid -match '^\d+$') {
-        Write-Host "Останавливаю процесс на порту 8090, PID: $pid"
-        Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue
+    $processId = ($conn -split '\s+')[-1]
+    if ($processId -match '^\d+$') {
+        Write-Host "Останавливаю процесс на порту 8090, PID: $processId"
+        Stop-Process -Id $processId -Force -ErrorAction SilentlyContinue
     }
 }
 Start-Sleep -Seconds 3
@@ -33,7 +33,7 @@ Write-Host "[INFO] Используется Java 17" -ForegroundColor Cyan
 
 # Проверка Java
 Write-Host "[1/5] Проверка Java..." -ForegroundColor Yellow
-$javaVersion = java -version 2>&1
+$null = java -version 2>&1
 if ($LASTEXITCODE -ne 0) {
     Write-Host "[ОШИБКА] Java не найдена" -ForegroundColor Red
     Read-Host "Нажмите Enter для выхода"
@@ -88,8 +88,14 @@ Write-Host ""
 # Открытие браузера
 Start-Process "http://localhost:8090/swagger-ui.html"
 
+# Флаг для предотвращения двойного cleanup
+$script:cleanupDone = $false
+
 # Функция очистки при завершении
 function Cleanup {
+    if ($script:cleanupDone) { return }
+    $script:cleanupDone = $true
+    
     Write-Host ""
     Write-Host "╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Yellow
     Write-Host "║              ОСТАНОВКА СЕРВИСОВ...                          ║" -ForegroundColor Yellow
@@ -104,9 +110,6 @@ function Cleanup {
     Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Green
     Write-Host ""
 }
-
-# Регистрируем обработчик Ctrl+C
-$null = Register-EngineEvent -SourceIdentifier PowerShell.Exiting -Action { Cleanup }
 
 try {
     # Запуск Maven (вывод ошибок скрыт)
