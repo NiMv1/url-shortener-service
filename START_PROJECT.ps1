@@ -81,7 +81,7 @@ Write-Host "║  RabbitMQ:    http://localhost:15672 (guest/guest)          ║"
 Write-Host "║  Prometheus:  http://localhost:9091                         ║" -ForegroundColor Cyan
 Write-Host "║  Grafana:     http://localhost:3001 (admin/admin)           ║" -ForegroundColor Cyan
 Write-Host "╠══════════════════════════════════════════════════════════════╣" -ForegroundColor Cyan
-Write-Host "║  Для остановки: нажмите Ctrl+C                              ║" -ForegroundColor Cyan
+Write-Host "║  Для остановки: нажмите Ctrl+C, затем N и Enter             ║" -ForegroundColor Cyan
 Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
 
@@ -119,6 +119,6 @@ try {
 finally {
     # Всегда выполняем cleanup
     Cleanup
-    Write-Host "Нажмите Enter для закрытия окна..."
-    Read-Host
+    Write-Host "Нажмите любую клавишу для закрытия окна..." -ForegroundColor Cyan
+    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 }
