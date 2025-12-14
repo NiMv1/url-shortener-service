@@ -80,7 +80,7 @@ echo ║  RabbitMQ:    http://localhost:15672 (guest/guest)          ║
 echo ║  Prometheus:  http://localhost:9091                         ║
 echo ║  Grafana:     http://localhost:3001 (admin/admin)           ║
 echo ╠══════════════════════════════════════════════════════════════╣
-echo ║  Для остановки: нажмите Ctrl+C                              ║
+echo ║  Для остановки: запустите STOP_PROJECT.bat                  ║
 echo ╚══════════════════════════════════════════════════════════════╝
 echo.
 
@@ -88,10 +88,12 @@ echo.
 start "" "http://localhost:8090/swagger-ui.html"
 
 :: Запуск приложения в текущем окне (блокирующий режим)
-mvn spring-boot:run -DskipTests
+:: После завершения (Ctrl+C или ошибка) - переходим к cleanup
+call mvn spring-boot:run -DskipTests
+goto :cleanup
 
 :cleanup
-:: После остановки (Ctrl+C или закрытие окна) - остановить Docker
+:: После остановки - остановить Docker
 echo.
 echo ╔══════════════════════════════════════════════════════════════╗
 echo ║              ОСТАНОВКА СЕРВИСОВ...                          ║
@@ -107,3 +109,4 @@ echo ╚════════════════════════
 echo.
 echo Нажмите любую клавишу для закрытия окна...
 pause >nul
+exit /b 0
