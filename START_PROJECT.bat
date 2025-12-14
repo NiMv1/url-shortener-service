@@ -17,9 +17,10 @@ for /f "tokens=5" %%a in ('netstat -ano ^| findstr :8090 ^| findstr LISTENING 2^
 echo [OK] Порт 8090 освобождён
 echo.
 
-:: Настройка Java
-set JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-21.0.9.10-hotspot
+:: Настройка Java 17 (требуется для совместимости с Lombok)
+set JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-17.0.17.10-hotspot
 set PATH=%JAVA_HOME%\bin;%PATH%
+echo [INFO] Используется Java 17
 
 :: Проверка Java
 echo [1/5] Проверка Java...
@@ -64,7 +65,7 @@ echo.
 set SPRING_DATA_REDIS_PORT=6380
 
 echo [5/5] Запуск приложения...
-start "URL Shortener (8090)" cmd /c "cd /d "%~dp0" && set JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-21.0.9.10-hotspot && set SPRING_DATA_REDIS_PORT=6380 && mvn spring-boot:run -DskipTests"
+start "URL Shortener (8090)" cmd /k "cd /d "%~dp0" && set JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-17.0.17.10-hotspot && set SPRING_DATA_REDIS_PORT=6380 && mvn spring-boot:run -DskipTests"
 
 :: Ожидание запуска приложения
 timeout /t 25 /nobreak >nul
@@ -107,8 +108,17 @@ pause
 :: После остановки - остановить всё
 echo.
 echo Остановка сервисов...
+:: Остановка Java процесса на порту 8090
+for /f "tokens=5" %%a in ('netstat -ano ^| findstr :8090 ^| findstr LISTENING 2^>nul') do (
+    echo Остановка процесса PID: %%a
+    taskkill /F /PID %%a 2>nul
+)
+:: Закрытие окна URL Shortener
 taskkill /FI "WINDOWTITLE eq URL Shortener*" /F 2>nul
 echo Остановка контейнеров...
 docker-compose down
-echo Готово!
+echo.
+echo ╔══════════════════════════════════════════════════════════════╗
+echo ║                    ВСЕ СЕРВИСЫ ОСТАНОВЛЕНЫ                   ║
+echo ╚══════════════════════════════════════════════════════════════╝
 pause
