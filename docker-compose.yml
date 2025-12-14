@@ -1,36 +1,4 @@
-version: '3.8'
-
 services:
-  # URL Shortener Application
-  url-shortener:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: url-shortener
-    depends_on:
-      mongodb:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-    environment:
-      MONGO_HOST: mongodb
-      MONGO_PORT: 27017
-      MONGO_DB: url_shortener
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      RABBITMQ_HOST: rabbitmq
-      RABBITMQ_PORT: 5672
-      RABBITMQ_USERNAME: guest
-      RABBITMQ_PASSWORD: guest
-      JWT_SECRET: urlShortenerSecretKeyForJWTTokenGenerationThatIsAtLeast256BitsLong
-      BASE_URL: http://localhost:8090
-    ports:
-      - "8090:8090"
-    networks:
-      - url-shortener-network
-
   # MongoDB
   mongodb:
     image: mongo:7.0
