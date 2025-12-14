@@ -47,7 +47,7 @@
 
 | Категория | Технологии |
 |-----------|------------|
-| **Backend** | Java 21, Spring Boot 3.2, Spring WebFlux (Reactive) |
+| **Backend** | Java 17, Spring Boot 3.2, Spring WebFlux (Reactive) |
 | **База данных** | MongoDB 7.0 (NoSQL, реактивный драйвер) |
 | **Кэширование** | Redis 7 (реактивный клиент) |
 | **Messaging** | RabbitMQ 3.12 |
