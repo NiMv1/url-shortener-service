@@ -1,6 +1,6 @@
 @echo off
 chcp 65001 >nul
-title URL Shortener Service - Запуск проекта
+title URL Shortener Service
 color 0A
 
 echo ╔══════════════════════════════════════════════════════════════╗
@@ -17,7 +17,7 @@ for /f "tokens=5" %%a in ('netstat -ano ^| findstr :8090 ^| findstr LISTENING 2^
 echo [OK] Порт 8090 освобождён
 echo.
 
-:: Настройка Java 17 (требуется для совместимости с Lombok)
+:: Настройка Java 17
 set "JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-17.0.17.10-hotspot"
 set "PATH=%JAVA_HOME%\bin;%PATH%"
 echo [INFO] Используется Java 17
@@ -26,7 +26,7 @@ echo [INFO] Используется Java 17
 echo [1/5] Проверка Java...
 java -version 2>nul
 if errorlevel 1 (
-    echo [ОШИБКА] Java не найдена! Установите Java 21.
+    echo [ОШИБКА] Java не найдена!
     pause
     exit /b 1
 )
@@ -44,78 +44,47 @@ if errorlevel 1 (
 echo [OK] Docker запущен
 echo.
 
-:: Запуск ВСЕЙ инфраструктуры (включая Prometheus, Grafana)
-echo [3/5] Запуск всей инфраструктуры Docker...
+:: Запуск инфраструктуры
+echo [3/5] Запуск инфраструктуры Docker...
 docker-compose up -d
 if errorlevel 1 (
     echo [ОШИБКА] Не удалось запустить контейнеры!
     pause
     exit /b 1
 )
-echo [OK] Все контейнеры запущены
+echo [OK] Контейнеры запущены
 echo.
 
-:: Ожидание готовности контейнеров
-echo [4/5] Ожидание готовности сервисов (20 сек)...
-timeout /t 20 /nobreak >nul
+:: Ожидание готовности
+echo [4/5] Ожидание готовности сервисов (15 сек)...
+timeout /t 15 /nobreak >nul
 echo [OK] Сервисы готовы
 echo.
 
 :: Установка переменных окружения
 set SPRING_DATA_REDIS_PORT=6380
 
-echo [5/5] Запуск приложения...
-start "URL Shortener (8090)" "%~dp0run-app.bat"
-
-:: Ожидание запуска приложения
-timeout /t 30 /nobreak >nul
-
-:: Открытие браузера с вкладками
-echo Открытие браузера...
-start "" "http://localhost:8090/swagger-ui.html"
-timeout /t 1 /nobreak >nul
-start "" "http://localhost:15672"
-timeout /t 1 /nobreak >nul
-start "" "http://localhost:9091"
-timeout /t 1 /nobreak >nul
-start "" "http://localhost:3001"
-echo [OK] Вкладки браузера открыты
+echo [5/5] Запуск приложения (в этом окне)...
 echo.
-
 echo ╔══════════════════════════════════════════════════════════════╗
-echo ║              URL SHORTENER SERVICE ЗАПУЩЕН!                 ║
+echo ║  Swagger UI:  http://localhost:8090/swagger-ui.html         ║
+echo ║  RabbitMQ:    http://localhost:15672 (guest/guest)          ║
+echo ║  Prometheus:  http://localhost:9091                         ║
+echo ║  Grafana:     http://localhost:3001 (admin/admin)           ║
 echo ╠══════════════════════════════════════════════════════════════╣
-echo ║  API:                                                        ║
-echo ║  • URL Shortener API:  http://localhost:8090                ║
-echo ║  • Swagger UI:         http://localhost:8090/swagger-ui.html║
-echo ║  • Health Check:       http://localhost:8090/actuator/health║
-echo ╠══════════════════════════════════════════════════════════════╣
-echo ║  Инфраструктура:                                             ║
-echo ║  • RabbitMQ:           http://localhost:15672 (guest/guest) ║
-echo ║  • MongoDB:            localhost:27017                      ║
-echo ║  • Redis:              localhost:6380                       ║
-echo ╠══════════════════════════════════════════════════════════════╣
-echo ║  Мониторинг:                                                 ║
-echo ║  • Prometheus:         http://localhost:9091                ║
-echo ║  • Grafana:            http://localhost:3001 (admin/admin)  ║
-echo ╠══════════════════════════════════════════════════════════════╣
-echo ║  Для остановки: нажмите любую клавишу в этом окне           ║
+echo ║  Для остановки: нажмите Ctrl+C                              ║
 echo ╚══════════════════════════════════════════════════════════════╝
 echo.
 
-pause
+:: Открытие браузера
+start "" "http://localhost:8090/swagger-ui.html"
 
-:: После остановки - остановить всё
+:: Запуск приложения в текущем окне (блокирующий режим)
+mvn spring-boot:run -DskipTests
+
+:: После остановки (Ctrl+C) - остановить Docker
 echo.
-echo Остановка сервисов...
-:: Остановка Java процесса на порту 8090
-for /f "tokens=5" %%a in ('netstat -ano ^| findstr :8090 ^| findstr LISTENING 2^>nul') do (
-    echo Остановка процесса PID: %%a
-    taskkill /F /PID %%a 2>nul
-)
-:: Закрытие окна URL Shortener
-taskkill /FI "WINDOWTITLE eq URL Shortener*" /F 2>nul
-echo Остановка контейнеров...
+echo Остановка контейнеров Docker...
 docker-compose down
 echo.
 echo ╔══════════════════════════════════════════════════════════════╗
