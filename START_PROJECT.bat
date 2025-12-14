@@ -34,7 +34,7 @@ echo [INFO] Используется Java 17
 echo [1/5] Проверка Java...
 java -version 2>nul
 if errorlevel 1 (
-    echo [ОШИБКА] Java не найдена!
+    echo [ОШИБКА] Java не найдена
     pause
     exit /b 1
 )
@@ -45,7 +45,7 @@ echo.
 echo [2/5] Проверка Docker...
 docker info >nul 2>&1
 if errorlevel 1 (
-    echo [ОШИБКА] Docker не запущен! Запустите Docker Desktop.
+    echo [ОШИБКА] Docker не запущен. Запустите Docker Desktop.
     pause
     exit /b 1
 )
@@ -56,7 +56,7 @@ echo.
 echo [3/5] Запуск инфраструктуры Docker...
 docker-compose up -d
 if errorlevel 1 (
-    echo [ОШИБКА] Не удалось запустить контейнеры!
+    echo [ОШИБКА] Не удалось запустить контейнеры
     pause
     exit /b 1
 )
