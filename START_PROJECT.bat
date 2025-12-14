@@ -18,8 +18,8 @@ echo [OK] Порт 8090 освобождён
 echo.
 
 :: Настройка Java 17 (требуется для совместимости с Lombok)
-set JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-17.0.17.10-hotspot
-set PATH=%JAVA_HOME%\bin;%PATH%
+set "JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-17.0.17.10-hotspot"
+set "PATH=%JAVA_HOME%\bin;%PATH%"
 echo [INFO] Используется Java 17
 
 :: Проверка Java
@@ -65,10 +65,10 @@ echo.
 set SPRING_DATA_REDIS_PORT=6380
 
 echo [5/5] Запуск приложения...
-start "URL Shortener (8090)" cmd /k "cd /d "%~dp0" && set JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-17.0.17.10-hotspot && set SPRING_DATA_REDIS_PORT=6380 && mvn spring-boot:run -DskipTests"
+start "URL Shortener (8090)" "%~dp0run-app.bat"
 
 :: Ожидание запуска приложения
-timeout /t 25 /nobreak >nul
+timeout /t 30 /nobreak >nul
 
 :: Открытие браузера с вкладками
 echo Открытие браузера...
