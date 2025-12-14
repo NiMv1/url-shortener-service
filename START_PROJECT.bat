@@ -87,9 +87,12 @@ echo.
 :: Открытие браузера
 start "" "http://localhost:8090/swagger-ui.html"
 
-:: Запуск приложения в текущем окне (блокирующий режим)
-:: После завершения (Ctrl+C или ошибка) - переходим к cleanup
-call mvn spring-boot:run -DskipTests
+:: Запуск приложения через PowerShell (без "Terminate batch job?" и без BUILD FAILURE)
+echo.
+echo Приложение запущено. Для остановки нажмите Ctrl+C
+echo ═══════════════════════════════════════════════════════════════
+echo.
+powershell -NoProfile -Command "try { mvn spring-boot:run -DskipTests 2>$null } catch { } finally { exit 0 }"
 goto :cleanup
 
 :cleanup
