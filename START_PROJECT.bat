@@ -13,7 +13,12 @@ cd /d "%~dp0"
 
 :: Остановка предыдущих Java процессов на порту 8090
 echo [0/5] Остановка предыдущих процессов...
-for /f "tokens=5" %%a in ('netstat -ano ^| findstr :8090 ^| findstr LISTENING 2^>nul') do taskkill /F /PID %%a 2>nul
+for /f "tokens=5" %%a in ('netstat -ano ^| findstr :8090 ^| findstr LISTENING 2^>nul') do (
+    echo Останавливаю процесс на порту 8090, PID: %%a
+    taskkill /F /PID %%a >nul 2>&1
+)
+:: Ожидание освобождения порта
+timeout /t 3 /nobreak >nul
 echo [OK] Порт 8090 освобождён
 echo.
 
